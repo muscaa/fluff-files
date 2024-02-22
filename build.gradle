@@ -1,0 +1,27 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
+dependencies {
+	implementation "com.github.muscaa:fluff-core:1.0.5+"
+	implementation "com.github.muscaa:fluff-functions:1.0.1+"
+}
+
+java {
+	withSourcesJar()
+	withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+			from components.java
+        }
+    }
+}
