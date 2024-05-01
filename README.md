@@ -1,6 +1,7 @@
-# Fluff Functions
+# Fluff Files
 
-[![](https://jitpack.io/v/muscaa/fluff-files.svg)](https://jitpack.io/#muscaa/fluff-files) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![](https://jitpack.io/v/muscaa/fluff-files.svg)](https://jitpack.io/#muscaa/fluff-files)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Description
 
@@ -8,9 +9,9 @@ A library crafted to streamline file handling tasks with a comprehensive set of 
 
 ## Usage
 
-To integrate it into your project, add the following dependency:
-
-**Gradle**
+<details>
+<summary>Gradle</summary>
+    
 ```gradle
 repositories {
     maven { url "https://jitpack.io" }
@@ -20,7 +21,11 @@ dependencies {
     implementation "com.github.muscaa:fluff-files:VERSION"
 }
 ```
-**Maven**
+</details>
+
+<details>
+<summary>Maven</summary>
+    
 ```xml
 <repositories>
     <repository>
@@ -37,4 +42,6 @@ dependencies {
     </dependency>
 </dependencies>
 ```
+</details>
+
 Replace `VERSION` with the latest release available on [JitPack](https://jitpack.io/#muscaa/fluff-files).

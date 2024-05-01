@@ -1,15 +1,15 @@
 package fluff.files;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import fluff.files.builders.FileBuilder;
@@ -22,6 +22,20 @@ import fluff.files.io.FileWrite;
  */
 public class FileHelper {
     
+	private static final FileVisitor<Path> DELETE_VISITOR = new SimpleFileVisitor<>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+        }
+        
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+        }
+    };
+	
     /**
      * Creates a new file builder instance.
      *
@@ -68,39 +82,62 @@ public class FileHelper {
      */
     public static boolean delete(File file) {
         try {
-            Files.walkFileTree(file.toPath(), new SimpleFileVisitor<Path>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Files.delete(file);
-                    return FileVisitResult.CONTINUE;
-                }
-                
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    Files.delete(dir);
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            Files.walkFileTree(file.toPath(), DELETE_VISITOR);
             return true;
         } catch (IOException e) {}
         return false;
     }
     
     /**
-     * Copies data from one file to another.
+     * Deletes the contents of the specified directory.
      *
-     * @param from the source file
-     * @param to the destination file
-     * @return true if the data is successfully copied, false otherwise
+     * @param dir the directory whose contents are to be deleted
+     * @return true if the directory's contents are successfully deleted, false otherwise
+     */
+    public static boolean deleteContents(File dir) {
+        String[] list = dir.list();
+        if (list == null) return false;
+        for (String path : list) {
+            delete(new File(path));
+        }
+        return dir.list().length == 0;
+    }
+
+    
+    /**
+     * Copies a file or directory from one location to another.
+     *
+     * @param from the source file or directory
+     * @param to the destination file or directory
+     * @return true if the file or directory is successfully copied, false otherwise
      */
     public static boolean copy(File from, File to) {
-        try (FileInputStream in = new FileInputStream(from);
-        		FileOutputStream out = new FileOutputStream(to)) {
-            in.transferTo(out);
+    	try {
+			Files.copy(from.toPath(), to.toPath(),
+					StandardCopyOption.REPLACE_EXISTING,
+					StandardCopyOption.COPY_ATTRIBUTES);
+			return true;
+		} catch (IOException e) {}
+        return false;
+    }
+    
+    /**
+     * Moves a file or directory from one location to another.
+     *
+     * @param from the source file or directory
+     * @param to the destination file or directory
+     * @return true if the file or directory is successfully moved, false otherwise
+     */
+    public static boolean move(File from, File to) {
+        try {
+            Files.move(from.toPath(), to.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.COPY_ATTRIBUTES);
             return true;
         } catch (IOException e) {}
         return false;
     }
+
     
     /**
      * Creates a new file. If the file already exists, it returns true.
@@ -110,7 +147,8 @@ public class FileHelper {
      */
     public static boolean create(File file) {
         if (file.exists()) return true;
-        if (file.getParentFile() != null) file.getParentFile().mkdirs();
+        File parent = file.getParentFile();
+        if (parent != null) parent.mkdirs();
         try {
             return file.createNewFile();
         } catch (IOException e) {}
@@ -124,9 +162,10 @@ public class FileHelper {
      * @return the extension of the file, or null if no extension is found
      */
     public static String getExtension(File file) {
-        int last = file.getName().lastIndexOf('.');
+    	String name = file.getName();
+        int last = name.lastIndexOf('.');
         if (last == -1) return null;
-        return file.getName().substring(last);
+        return name.substring(last);
     }
     
     /**
@@ -136,9 +175,10 @@ public class FileHelper {
      * @return the name of the file without extension
      */
     public static String getNameNoExtension(File file) {
-        int last = file.getName().lastIndexOf('.');
-        if (last == -1) return file.getName();
-        return file.getName().substring(0, last);
+    	String name = file.getName();
+        int last = name.lastIndexOf('.');
+        if (last == -1) return name;
+        return name.substring(0, last);
     }
     
     /**
@@ -150,9 +190,7 @@ public class FileHelper {
     public static URL getURL(File file) {
         try {
             return file.toURI().toURL();
-        } catch (MalformedURLException e) {
-            // Handle MalformedURLException, return null if URL creation fails
-        }
+        } catch (MalformedURLException e) {}
         return null;
     }
     

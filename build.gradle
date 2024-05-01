@@ -1,6 +1,9 @@
 plugins {
-    id "java-library"
-    id "maven-publish"
+    id "com.github.muscaa.fluff-gradle" version "1.0.11"
+}
+
+fluff {
+	include = [ "LICENSE", "NOTICE" ]
 }
 
 repositories {
@@ -9,19 +12,6 @@ repositories {
 }
 
 dependencies {
-	implementation "com.github.muscaa:fluff-core:1.0.5+"
-	implementation "com.github.muscaa:fluff-functions:1.0.1+"
-}
-
-java {
-	withSourcesJar()
-	withJavadocJar()
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-			from components.java
-        }
-    }
+	api "com.github.muscaa:fluff-core:1.0.8+"
+	api "com.github.muscaa:fluff-functions:1.0.2+"
 }
