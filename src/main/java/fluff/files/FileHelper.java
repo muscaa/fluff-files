@@ -94,13 +94,15 @@ public class FileHelper {
      * @param dir the directory whose contents are to be deleted
      * @return true if the directory's contents are successfully deleted, false otherwise
      */
-    public static boolean deleteContents(File dir) {
+    public static boolean deleteContents(Folder dir) {
         String[] list = dir.list();
         if (list == null) return false;
+        boolean result = true;
         for (String path : list) {
-            delete(new File(path));
+        	File file = new File(dir, path);
+            result &= delete(file);
         }
-        return dir.list().length == 0;
+        return result;
     }
 
     
@@ -113,12 +115,51 @@ public class FileHelper {
      */
     public static boolean copy(File from, File to) {
     	try {
-			Files.copy(from.toPath(), to.toPath(),
-					StandardCopyOption.REPLACE_EXISTING,
-					StandardCopyOption.COPY_ATTRIBUTES);
+    		Path source = from.toPath();
+    		Path target = to.toPath();
+    		
+			Files.walkFileTree(source, new SimpleFileVisitor<>() {
+				
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+			        Path resolve = target.resolve(source.relativize(dir));
+			        if (Files.notExists(resolve))
+			        	Files.createDirectories(resolve);
+			        return FileVisitResult.CONTINUE;
+				}
+				
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			        Path resolve = target.resolve(source.relativize(file));
+			        Files.copy(file, resolve,
+			        		StandardCopyOption.REPLACE_EXISTING,
+			        		StandardCopyOption.COPY_ATTRIBUTES
+			        		);
+			        return FileVisitResult.CONTINUE;
+				}
+			});
 			return true;
 		} catch (IOException e) {}
         return false;
+    }
+    
+    /**
+     * Copies the contents from one location to another.
+     *
+     * @param fromDir the source directory
+     * @param toDir the destination directory
+     * @return true if the directory's contents are successfully copied, false otherwise
+     */
+    public static boolean copyContents(Folder fromDir, Folder toDir) {
+        String[] list = fromDir.list();
+        if (list == null) return false;
+        boolean result = true;
+        for (String path : list) {
+        	File from = new File(fromDir, path);
+        	File to = new File(toDir, path);
+            result &= copy(from, to);
+        }
+        return result;
     }
     
     /**
@@ -130,12 +171,56 @@ public class FileHelper {
      */
     public static boolean move(File from, File to) {
         try {
-            Files.move(from.toPath(), to.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.COPY_ATTRIBUTES);
+    		Path source = from.toPath();
+    		Path target = to.toPath();
+    		
+			Files.walkFileTree(source, new SimpleFileVisitor<>() {
+				
+				@Override
+				public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+			        Path resolve = target.resolve(source.relativize(dir));
+			        if (Files.notExists(resolve))
+			        	Files.createDirectories(resolve);
+			        return FileVisitResult.CONTINUE;
+				}
+				
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			        Path resolve = target.resolve(source.relativize(file));
+			        Files.move(file, resolve,
+			        		StandardCopyOption.REPLACE_EXISTING
+			        		);
+			        return FileVisitResult.CONTINUE;
+				}
+				
+		        @Override
+		        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+		            Files.delete(dir);
+		            return FileVisitResult.CONTINUE;
+		        }
+			});
             return true;
         } catch (IOException e) {}
         return false;
+    }
+    
+    /**
+     * Moves the contents from one location to another.
+     *
+     * @param fromDir the source directory
+     * @param toDir the destination directory
+     * @return true if the directory's contents are successfully moved, false otherwise
+     */
+    public static boolean moveContents(Folder fromDir, Folder toDir) {
+        String[] list = fromDir.list();
+        if (list == null) return false;
+        boolean result = true;
+        for (String path : list) {
+        	File from = new File(fromDir, path);
+        	File to = new File(toDir, path);
+            result &= move(from, to);
+        }
+        return result;
     }
 
     
