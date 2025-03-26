@@ -94,7 +94,7 @@ public class FileHelper {
      * @param dir the directory whose contents are to be deleted
      * @return true if the directory's contents are successfully deleted, false otherwise
      */
-    public static boolean deleteContents(Folder dir) {
+    public static boolean deleteContents(File dir) {
         String[] list = dir.list();
         if (list == null) return false;
         boolean result = true;
@@ -150,7 +150,7 @@ public class FileHelper {
      * @param toDir the destination directory
      * @return true if the directory's contents are successfully copied, false otherwise
      */
-    public static boolean copyContents(Folder fromDir, Folder toDir) {
+    public static boolean copyContents(File fromDir, File toDir) {
         String[] list = fromDir.list();
         if (list == null) return false;
         boolean result = true;
@@ -211,7 +211,7 @@ public class FileHelper {
      * @param toDir the destination directory
      * @return true if the directory's contents are successfully moved, false otherwise
      */
-    public static boolean moveContents(Folder fromDir, Folder toDir) {
+    public static boolean moveContents(File fromDir, File toDir) {
         String[] list = fromDir.list();
         if (list == null) return false;
         boolean result = true;
